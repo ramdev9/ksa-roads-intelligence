@@ -76,6 +76,27 @@ streamlit run src/dashboard.py
 
 Open http://localhost:8501 in your browser.
 
+## 🏗️ Architecture
+
+![KSA Roads Intelligence architecture diagram](architecture-diagram.png)
+
+Browser → Railway reverse proxy → the Streamlit app (one deployable unit that downloads, reshapes, risk-scores, and serves) → local CSV datastore (real KAPSARC data, refreshed on each deploy, with a bundled sample-data fallback) → KAPSARC Open Data API. [Editable diagram on Figma →](https://www.figma.com/board/EhBdJdTSmVTdWwGcPxNMIN)
+
+## 📦 What Data We Actually Pull
+
+`scripts/download_data.py` fetches 6 datasets from KAPSARC on every deploy. 2 are wired into the dashboard; the other 4 are downloaded but not yet charted. Real KAPSARC exports are semicolon-delimited, which `data_loader.py` accounts for.
+
+| Dataset | Used in dashboard? | Real schema (as downloaded) | Coverage |
+|---|---|---|---|
+| **Traffic accidents & casualties** | ✅ Yes | `time_period; region; indicator; value; geo_shape; geo_point_2d` — long format, one row per region/year/indicator. `indicator` ∈ {No. of Accidents, No. of Casualties - Injured, No. of Casualties - Dead}. 13 regions + a "Total" row. | 2016–2019 |
+| **Road development** | ✅ Yes | `gregorian_year; hijri_year; agricultural_dirt_roads_completed_during_the_year; paved_roads_completed_during_the_year` — km completed per year, not a running network total. | 1990–2013, 15 rows, non-continuous |
+| King Fahd Bridge traffic | ⬜ Not yet | `year; month; type; value` — monthly vehicle counts (e.g. "Outgoing Trucks / in Transit") crossing the Saudi–Bahrain causeway. | 2008–2019 |
+| Passenger & freight vehicles | ⬜ Not yet | `vehicle_type; operation; value` — vehicle counts by type and operation (e.g. "Heavy duty vehicles / Passenger"). | Single snapshot, tiny file |
+| Trade & transport costs | ⬜ Not yet | `origin_label; transportmode_label; indicator; footnoote; missing_value_notes; value` — freight cost/weight indicators by origin country and transport mode. | Large file (~1.6MB), many countries |
+| Vehicle crossings, major cities | ⬜ Not yet | `city; total_vehicles_entrance_registered_in_million; daily_register_000; avg_speed_in_kph; geo` — point-in-time snapshot, not a time series. | 9 Saudi cities, single snapshot |
+
+**Not in any KAPSARC dataset:** road investment/spend figures (SAR), highway-specific lengths, and regional population. Population is a small hardcoded reference table in `data_loader.py` (approximate, GASTAT-era, ~2019) used only to compute accidents-per-100K — it's labeled as such in the app, not pulled from KAPSARC.
+
 ## 📁 Project Structure
 
 ```

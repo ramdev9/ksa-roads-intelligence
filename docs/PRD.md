@@ -74,6 +74,8 @@ KAPSARC API → download_data.py → data/raw/*.csv → data_loader.py (reshape 
 
 `dashboard.py` tries real data first (`use_sample=False`) and falls back to bundled sample CSVs if the raw files aren't present, with an in-app caption showing which source is active.
 
+Architecture diagram: [docs/architecture-diagram.png](architecture-diagram.png), editable at [figma.com/board/EhBdJdTSmVTdWwGcPxNMIN](https://www.figma.com/board/EhBdJdTSmVTdWwGcPxNMIN). Full per-dataset schema breakdown is in the README's "What Data We Actually Pull" section.
+
 Six datasets downloaded from KAPSARC; two are actively used by the dashboard:
 - **Traffic accidents and casualties by region** — used. Raw format is long/semicolon-delimited (`time_period;region;indicator;value`), covers **2016-2019 only**, 13 regions + a "Total" row. `data_loader.py` pivots this to wide form and maps KAPSARC's region labels (e.g. "Eastern Region" → "Eastern") onto the app's canonical region list.
 - **Road development (paved + agricultural dirt roads)** — used. Raw format gives km **completed per year**, not a running network total, and covers **1990-2013 with gaps** (not continuous, stops well before the accident data starts). No highway-specific or investment figures exist in this dataset.
