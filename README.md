@@ -128,10 +128,14 @@ All data from [KAPSARC Open Data Portal](https://datasource.kapsarc.org):
 
 | Dataset | Description | Years |
 |---------|-------------|-------|
-| Traffic Accidents | Accidents and casualties by region | 2008+ |
-| King Fahd Bridge Traffic | Monthly vehicle crossings | 2009-2019 |
-| Passenger & Freight Vehicles | Vehicle counts by type | Various |
-| Road Development | Paved/rural roads construction | 2010+ |
+| Traffic Accidents | Accidents and casualties by region | 2016-2019 |
+| King Fahd Bridge Traffic | Monthly vehicle crossings | 2008-2019 |
+| Passenger & Freight Vehicles | Vehicle counts by type | Single snapshot |
+| Road Development | Paved/dirt roads completed per year | 1990-2013 (non-continuous) |
+| Trade & Transport Costs | Global freight cost/weight indicators | Single snapshot, 298 countries |
+| Vehicle Crossings, Major Cities | Entrances & avg. speed by city | Single snapshot, 8 cities |
+
+See "What Data We Actually Pull" below for the real field-level schema of each.
 
 ## 🔮 Future Enhancements
 
