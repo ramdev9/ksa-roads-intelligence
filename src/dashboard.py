@@ -433,31 +433,59 @@ if data_loaded:
 
     with st.expander("📐 Methodology & Data Decisions"):
         st.markdown("""
-        ### How We Read the Data
+### How We Read the Data
 
-        **Traffic Accidents (KAPSARC):** 2016-2019 only. KAPSARC's catalog describes this dataset as "2008+", but the downloadable CSV only contains 4 years. Each row = one region × one year.
+**Traffic Accidents (KAPSARC):** 2016–2019 only. KAPSARC's catalog describes this dataset as "2008+", but the downloadable CSV only contains 4 years. Each row = one region × one year.
 
-        **Road Development (KAPSARC):** 1990-2013 completions, with gaps (not every year is present). No overlap with the accident years, so no investment-vs-safety correlation is possible from this data.
+**Road Development (KAPSARC):** 1990–2013 completions, with gaps (not every year is present). No overlap with the accident years, so no investment-vs-safety correlation is possible from this data.
 
-        ### Derived Metrics
+**Data Freshness:** KAPSARC's most recent published accident data is 2019. This dashboard reflects historical patterns, not current conditions.
 
-        | Metric | Formula | Why |
-        |--------|---------|-----|
-        | Accidents per 100K | `(accidents / population) × 100,000` | Normalizes for region size |
-        | Fatality Rate | `(deaths / accidents) × 100` | Severity indicator |
-        | Risk Score | `0.4 × fatality + 0.3 × rate + 0.3 × trend` | Composite ranking |
+---
 
-        ### Assumptions Made
+### Derived Metrics
 
-        - **Population:** approximate GASTAT-era reference figures (~2019), not from KAPSARC. Used only for per-100K normalization — never shown as a standalone stat.
-        - **Risk weights:** 40/30/30 chosen to prioritize fatality severity over raw accident volume.
-        - **Tercile cutoffs:** High/Medium/Low = top/middle/bottom third of regions by score, not a fixed threshold — there's no external baseline to compare against.
+| Metric | Formula | Why |
+|--------|---------|-----|
+| Accidents per 100K | `(accidents / population) × 100,000` | Normalizes for region size |
+| Fatality Rate | `(deaths / accidents) × 100` | Severity indicator |
+| YoY Trend | `((current - previous) / previous) × 100` | Direction of change |
+| Risk Score | `0.4 × fatality + 0.3 × rate + 0.3 × trend` | Composite ranking |
 
-        ### What We Chose NOT to Build
+---
 
-        - **Forecasting:** 4 data points per region is insufficient for ARIMA/Prophet. Trend extrapolation with confidence bands would look more precise than the data supports.
-        - **Investment correlation:** KAPSARC has no regional investment/spend dataset, only completion km.
-        - **Map visualization:** Would need geocoding not present in the source data.
+### Assumptions Made
+
+- **Population:** approximate GASTAT-era reference figures (~2019), not from KAPSARC. Used only for per-100K normalization — never shown as a standalone stat.
+- **Weight rationale (40/30/30):** Fatality rate weighted highest because severity matters more than volume for policy prioritization. Rate and trend split equally to balance current state vs. trajectory.
+- **Tercile cutoffs:** High/Medium/Low = top/middle/bottom third of regions by score, not a fixed threshold — there's no external baseline to compare against.
+
+---
+
+### Other KAPSARC Signals (Context Only)
+
+These 4 datasets are charted for context but **not used in risk scoring**:
+
+- **King Fahd Causeway:** Monthly Saudi-Bahrain crossings, 2008–2019.
+- **Vehicle Crossings by City:** Single snapshot, no time series.
+- **Passenger & Freight Vehicles:** Single snapshot by vehicle type.
+- **Trade & Transport:** Global dataset — Saudi Arabia rows are null, shown for regional comparison only.
+
+---
+
+### Data Quality Notes
+
+- Trade & transport dataset contains no Saudi Arabia-specific records (all SA rows null)
+- Road development ends in 2013; accident data starts 2016 — no overlap for correlation
+- Sample fallback: if the KAPSARC API is unreachable, the dashboard uses bundled sample data (accidents and road development only — the 4 context datasets above have no sample equivalent)
+
+---
+
+### What We Chose NOT to Build
+
+- **Forecasting:** 4 data points per region is insufficient for ARIMA/Prophet. Trend extrapolation with confidence bands would look more precise than the data supports.
+- **Investment correlation:** KAPSARC has no regional investment/spend dataset, only completion km.
+- **Map visualization:** Would need geocoding not present in the source data.
         """)
 
     # Footer
