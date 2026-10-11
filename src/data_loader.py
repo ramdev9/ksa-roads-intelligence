@@ -118,6 +118,71 @@ def load_road_development(use_sample: bool = True) -> pd.DataFrame:
     return df
 
 
+_MONTH_ORDER = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+]
+
+
+def load_king_fahd_bridge_traffic() -> pd.DataFrame:
+    """Monthly vehicle crossings on the King Fahd Causeway (Saudi-Bahrain), 2008-2019.
+
+    Real-data only — no bundled sample, since this dataset wasn't part of
+    the original sample-data set. Columns: year, month, type, value.
+    `type` is a crossing category, e.g. "Outgoing Trucks / Empty" or
+    "Incoming Vehicles".
+    """
+    filepath = RAW_DIR / "king_fahd_bridge_traffic.csv"
+    if not filepath.exists():
+        raise FileNotFoundError(f"Data file not found: {filepath}")
+
+    df = pd.read_csv(filepath, sep=";")
+    df["month"] = pd.Categorical(df["month"], categories=_MONTH_ORDER, ordered=True)
+    return df.dropna(subset=["value"])
+
+
+def load_passenger_freight_vehicles() -> pd.DataFrame:
+    """Vehicle counts by type and operation (passenger vs. freight). Single snapshot, not a time series."""
+    filepath = RAW_DIR / "passenger_freight_vehicles.csv"
+    if not filepath.exists():
+        raise FileNotFoundError(f"Data file not found: {filepath}")
+
+    return pd.read_csv(filepath, sep=";")
+
+
+def load_trade_transport(indicator: str = "Transport_cost_intensity_in_US_per_tonkm_Value",
+                          transport_mode: str = "Road") -> pd.DataFrame:
+    """Global trade/transport cost indicators by origin country and mode.
+
+    KAPSARC's export has no Saudi Arabia-specific rows in this dataset
+    (checked: all "Saudi Arabia" rows have a null value) — it's a global
+    reference table, not a KSA-specific one. Defaults to road transport
+    cost intensity, the indicator most comparable across regions.
+    """
+    filepath = RAW_DIR / "trade_transport.csv"
+    if not filepath.exists():
+        raise FileNotFoundError(f"Data file not found: {filepath}")
+
+    df = pd.read_csv(filepath, sep=";", usecols=["origin_label", "transportmode_label", "indicator", "value"])
+    df = df[(df["indicator"] == indicator) & (df["transportmode_label"] == transport_mode)]
+    return df.dropna(subset=["value"])
+
+
+def load_vehicle_crossings_cities() -> pd.DataFrame:
+    """Vehicle crossing stats for major Saudi cities. Single snapshot, not a time series."""
+    filepath = RAW_DIR / "vehicle_crossings_cities.csv"
+    if not filepath.exists():
+        raise FileNotFoundError(f"Data file not found: {filepath}")
+
+    df = pd.read_csv(filepath, sep=";")
+    df = df.rename(columns={
+        "total_vehicles_entrance_registered_in_million": "entrance_million_vehicles",
+        "daily_register_000": "daily_register_thousands",
+        "avg_speed_in_kph": "avg_speed_kph",
+    })
+    return df
+
+
 def get_regions() -> list:
     """Get list of Saudi regions."""
     return [

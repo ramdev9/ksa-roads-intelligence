@@ -15,7 +15,11 @@ from pathlib import Path
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
-from data_loader import load_traffic_accidents, load_road_development, get_summary_stats, get_regions
+from data_loader import (
+    load_traffic_accidents, load_road_development, get_summary_stats, get_regions,
+    load_king_fahd_bridge_traffic, load_passenger_freight_vehicles,
+    load_trade_transport, load_vehicle_crossings_cities,
+)
 from risk_model import compute_risk_scores, compute_yoy_trend
 
 # Page config
@@ -343,6 +347,77 @@ if data_loaded:
 
     with st.expander("📋 View Risk Scoring Data"):
         st.dataframe(risk_df, use_container_width=True)
+
+    st.divider()
+
+    # Other KAPSARC Signals (real data only — these 4 datasets have no sample fallback)
+    st.subheader("🌉 Other KAPSARC Signals")
+
+    if data_source != "real":
+        st.info(
+            "These views need real KAPSARC data — run `python scripts/download_data.py` "
+            "and reload to see them. No sample data was built for these 4 datasets."
+        )
+    else:
+        try:
+            kf_df = load_king_fahd_bridge_traffic()
+            pf_df = load_passenger_freight_vehicles()
+            tt_df = load_trade_transport()
+            vc_df = load_vehicle_crossings_cities()
+            other_data_loaded = True
+        except FileNotFoundError as e:
+            st.warning(f"Some datasets aren't downloaded yet: {e}")
+            other_data_loaded = False
+
+        if other_data_loaded:
+            col1, col2 = st.columns(2)
+
+            with col1:
+                yearly_kf = kf_df.groupby("year")["value"].sum().reset_index()
+                fig = px.line(
+                    yearly_kf, x="year", y="value", markers=True,
+                    title="King Fahd Causeway Traffic (Saudi-Bahrain), Total Vehicles/Year"
+                )
+                fig.update_layout(height=380, xaxis_title="Year", yaxis_title="Total Crossings")
+                st.plotly_chart(fig, use_container_width=True)
+                st.caption("Monthly crossing counts by category (trucks/vehicles, incoming/outgoing), summed per year. 2008–2019.")
+
+            with col2:
+                fig = px.bar(
+                    vc_df.sort_values("entrance_million_vehicles"),
+                    x="entrance_million_vehicles", y="city", orientation="h",
+                    color="avg_speed_kph", color_continuous_scale="Teal",
+                    title="Vehicle Entrances by City (Millions, Registered)"
+                )
+                fig.update_layout(height=380, xaxis_title="Entrances (Millions)", yaxis_title="")
+                st.plotly_chart(fig, use_container_width=True)
+                st.caption("Single snapshot, not a time series. Color = average recorded speed (km/h).")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                fig = px.bar(
+                    pf_df, x="vehicle_type", y="value", color="operation", barmode="group",
+                    title="Passenger & Freight Vehicles by Type"
+                )
+                fig.update_layout(height=380, xaxis_title="", yaxis_title="Vehicle Count")
+                st.plotly_chart(fig, use_container_width=True)
+                st.caption("Single snapshot, not a time series.")
+
+            with col2:
+                top_tt = tt_df.sort_values("value", ascending=False).head(15)
+                fig = px.bar(
+                    top_tt.sort_values("value"),
+                    x="value", y="origin_label", orientation="h",
+                    title="Road Transport Cost Intensity — Top 15 (US$/ton-km)"
+                )
+                fig.update_layout(height=380, xaxis_title="US$ per ton-km", yaxis_title="")
+                st.plotly_chart(fig, use_container_width=True)
+                st.caption(
+                    "⚠️ KAPSARC's trade & transport dataset has no Saudi Arabia-specific records "
+                    "(all Saudi Arabia rows are null) — shown here as global context only, across "
+                    "298 countries/regions."
+                )
 
     st.divider()
 

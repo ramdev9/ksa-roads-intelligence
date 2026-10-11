@@ -76,13 +76,15 @@ KAPSARC API → download_data.py → data/raw/*.csv → data_loader.py (reshape 
 
 Architecture diagram: [docs/architecture-diagram.png](architecture-diagram.png), editable at [figma.com/board/EhBdJdTSmVTdWwGcPxNMIN](https://www.figma.com/board/EhBdJdTSmVTdWwGcPxNMIN). Full per-dataset schema breakdown is in the README's "What Data We Actually Pull" section.
 
-Six datasets downloaded from KAPSARC; two are actively used by the dashboard:
-- **Traffic accidents and casualties by region** — used. Raw format is long/semicolon-delimited (`time_period;region;indicator;value`), covers **2016-2019 only**, 13 regions + a "Total" row. `data_loader.py` pivots this to wide form and maps KAPSARC's region labels (e.g. "Eastern Region" → "Eastern") onto the app's canonical region list.
-- **Road development (paved + agricultural dirt roads)** — used. Raw format gives km **completed per year**, not a running network total, and covers **1990-2013 with gaps** (not continuous, stops well before the accident data starts). No highway-specific or investment figures exist in this dataset.
-- King Fahd Bridge vehicle crossings (monthly) — downloaded, not yet wired into a chart
-- Passenger and freight vehicles by type — downloaded, not yet wired into a chart
-- Trade and transport costs — downloaded, not yet wired into a chart
-- Vehicle crossings at major cities — downloaded (9 cities, point-in-time, not a time series), not yet wired into a chart
+All six datasets downloaded from KAPSARC are wired into the dashboard:
+- **Traffic accidents and casualties by region** — primary dataset. Raw format is long/semicolon-delimited (`time_period;region;indicator;value`), covers **2016-2019 only**, 13 regions + a "Total" row. `data_loader.py` pivots this to wide form and maps KAPSARC's region labels (e.g. "Eastern Region" → "Eastern") onto the app's canonical region list.
+- **Road development (paved + agricultural dirt roads)** — primary dataset. Raw format gives km **completed per year**, not a running network total, and covers **1990-2013 with gaps** (not continuous, stops well before the accident data starts). No highway-specific or investment figures exist in this dataset.
+- **King Fahd Bridge vehicle crossings** (monthly, 2008-2019) — charted as a yearly total-crossings trend line.
+- **Passenger and freight vehicles by type** — single snapshot, charted as a grouped bar by vehicle type and operation.
+- **Trade and transport costs** — global reference table, 298 countries/regions. **Saudi Arabia has no value in any row of this dataset** (verified: all Saudi Arabia rows are null) — charted as a top-15 countries bar for context, with an explicit in-app warning that it isn't KSA-specific.
+- **Vehicle crossings at major cities** (8 cities, point-in-time snapshot) — charted as entrances-by-city, colored by average recorded speed.
+
+The last four have no bundled sample-data equivalent (they were never part of the original sample-data set), so their dashboard section ("Other KAPSARC Signals") only renders when real data is loaded — it shows an explanatory message in sample mode instead of fabricating placeholder charts.
 
 **Known gaps vs. the original plan:** KAPSARC has no investment/spend dataset for Saudi roads, so the "Investment vs outcome correlation" hypothesis in section 02 can't be tested with this data source — the investment chart was dropped and replaced with "Paved Roads Completed per Year." The accident and road-development series also don't overlap in time (2016-19 vs 1990-2013), so no single chart can correlate them. Population-by-region (needed for `accidents_per_100k`) isn't in any KAPSARC dataset either — `data_loader.py` uses a small hardcoded table of approximate GASTAT-era regional population estimates (~2019), clearly caveated in the UI as a reference figure, not sourced from KAPSARC.
 
@@ -105,6 +107,10 @@ Calculated at load time, not stored:
 | Completions Bar | Paved roads completed per year (km) |
 | Safety Scatter | Accident rate vs fatality rate by region |
 | Heatmap | Accidents by region × year |
+| Causeway Traffic Line | King Fahd Bridge yearly total vehicle crossings, 2008-2019 |
+| City Entrances Bar | Vehicle entrances by city, colored by avg. speed |
+| Vehicle Mix Bar | Passenger & freight vehicles by type and operation |
+| Global Transport Cost Bar | Top-15 countries by road transport cost intensity (context only, no Saudi Arabia data in this table) |
 
 ### RISK SCORING MODEL (v2)
 
@@ -216,6 +222,8 @@ Dashboard displays all 9 chart/view types with real or sample data, download scr
 | 2026-10-11 | Deployed to Railway: ksa-roads-intelligence-production.up.railway.app | DONE |
 | 2026-10-11 | Regional risk scoring + YoY trend model added (`src/risk_model.py`); time-series forecasting ruled out as infeasible with 4 years of annual data | DONE |
 | 2026-10-11 | Portfolio case study written (`docs/portfolio-case-study.md`) | DONE |
+| 2026-10-11 | Architecture diagram added (Figma + `docs/architecture-diagram.png`) | DONE |
+| 2026-10-11 | Remaining 4 KAPSARC datasets wired into "Other KAPSARC Signals" section | DONE |
 
 ---
 

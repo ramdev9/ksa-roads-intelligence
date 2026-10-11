@@ -53,7 +53,7 @@ Streamlit · Pandas · Plotly · KAPSARC Open Data API · Railway
 
 ## What's Next
 
-Two of six downloaded KAPSARC datasets (vehicle crossings, trade & transport) aren't wired into a chart yet. Regional population — needed for per-100K rates — is an approximate reference table, not a KAPSARC field, and is labeled as such in the app. If KAPSARC ever publishes more than four years of accident data, the risk model is the right place to revisit real forecasting.
+All six downloaded KAPSARC datasets are now wired into charts — including one (trade & transport costs) that turned out to have zero Saudi Arabia-specific records, which the dashboard says outright rather than hiding. Regional population — needed for per-100K rates — is still an approximate reference table, not a KAPSARC field, and is labeled as such in the app. If KAPSARC ever publishes more than four years of accident data, the risk model is the right place to revisit real forecasting.
 
 ---
 

@@ -37,6 +37,10 @@ A unified dashboard that combines multiple Saudi transportation datasets pulled 
 6. **Heatmap** - Accidents by region and year
 7. **Regional Risk Scoring** - Composite risk score (fatality rate + accident rate + trend) ranking regions High/Medium/Low
 8. **Year-over-Year Trend** - Average YoY accident change by region
+9. **King Fahd Causeway Traffic** - Yearly total Saudi–Bahrain vehicle crossings, 2008–2019
+10. **Vehicle Entrances by City** - Registered entrances for 8 major Saudi cities
+11. **Passenger & Freight Vehicle Mix** - Vehicle counts by type and operation
+12. **Global Road Transport Cost Context** - Top-15 countries by cost intensity (Saudi Arabia has no data in this KAPSARC table — shown for context only)
 
 > No ARIMA/Prophet forecasting — the real accident data is annual with only 4 years per region, too thin to forecast reliably. Risk scoring was chosen as the honest alternative; see `docs/PRD.md` section 04 for the full rationale.
 
@@ -84,16 +88,16 @@ Browser → Railway reverse proxy → the Streamlit app (one deployable unit tha
 
 ## 📦 What Data We Actually Pull
 
-`scripts/download_data.py` fetches 6 datasets from KAPSARC on every deploy. 2 are wired into the dashboard; the other 4 are downloaded but not yet charted. Real KAPSARC exports are semicolon-delimited, which `data_loader.py` accounts for.
+`scripts/download_data.py` fetches 6 datasets from KAPSARC on every deploy, and all 6 are now wired into the dashboard. Real KAPSARC exports are semicolon-delimited, which `data_loader.py` accounts for. The last 4 datasets have no bundled sample-data equivalent — their dashboard section only renders when real data is loaded.
 
-| Dataset | Used in dashboard? | Real schema (as downloaded) | Coverage |
-|---|---|---|---|
-| **Traffic accidents & casualties** | ✅ Yes | `time_period; region; indicator; value; geo_shape; geo_point_2d` — long format, one row per region/year/indicator. `indicator` ∈ {No. of Accidents, No. of Casualties - Injured, No. of Casualties - Dead}. 13 regions + a "Total" row. | 2016–2019 |
-| **Road development** | ✅ Yes | `gregorian_year; hijri_year; agricultural_dirt_roads_completed_during_the_year; paved_roads_completed_during_the_year` — km completed per year, not a running network total. | 1990–2013, 15 rows, non-continuous |
-| King Fahd Bridge traffic | ⬜ Not yet | `year; month; type; value` — monthly vehicle counts (e.g. "Outgoing Trucks / in Transit") crossing the Saudi–Bahrain causeway. | 2008–2019 |
-| Passenger & freight vehicles | ⬜ Not yet | `vehicle_type; operation; value` — vehicle counts by type and operation (e.g. "Heavy duty vehicles / Passenger"). | Single snapshot, tiny file |
-| Trade & transport costs | ⬜ Not yet | `origin_label; transportmode_label; indicator; footnoote; missing_value_notes; value` — freight cost/weight indicators by origin country and transport mode. | Large file (~1.6MB), many countries |
-| Vehicle crossings, major cities | ⬜ Not yet | `city; total_vehicles_entrance_registered_in_million; daily_register_000; avg_speed_in_kph; geo` — point-in-time snapshot, not a time series. | 9 Saudi cities, single snapshot |
+| Dataset | Real schema (as downloaded) | Coverage |
+|---|---|---|
+| **Traffic accidents & casualties** | `time_period; region; indicator; value; geo_shape; geo_point_2d` — long format, one row per region/year/indicator. `indicator` ∈ {No. of Accidents, No. of Casualties - Injured, No. of Casualties - Dead}. 13 regions + a "Total" row. | 2016–2019 |
+| **Road development** | `gregorian_year; hijri_year; agricultural_dirt_roads_completed_during_the_year; paved_roads_completed_during_the_year` — km completed per year, not a running network total. | 1990–2013, 15 rows, non-continuous |
+| **King Fahd Bridge traffic** | `year; month; type; value` — monthly vehicle counts (e.g. "Outgoing Trucks / in Transit") crossing the Saudi–Bahrain causeway. | 2008–2019 |
+| **Passenger & freight vehicles** | `vehicle_type; operation; value` — vehicle counts by type and operation (e.g. "Heavy duty vehicles / Passenger"). | Single snapshot, tiny file |
+| **Trade & transport costs** | `origin_label; transportmode_label; indicator; footnoote; missing_value_notes; value` — freight cost/weight indicators by origin country and transport mode. **No Saudi Arabia rows have a value** (checked: all null) — this is a global reference table, shown for context only, not a KSA-specific metric. | Large file (~1.6MB), 298 countries/regions |
+| **Vehicle crossings, major cities** | `city; total_vehicles_entrance_registered_in_million; daily_register_000; avg_speed_in_kph; geo` — point-in-time snapshot, not a time series. | 8 Saudi cities, single snapshot |
 
 **Not in any KAPSARC dataset:** road investment/spend figures (SAR), highway-specific lengths, and regional population. Population is a small hardcoded reference table in `data_loader.py` (approximate, GASTAT-era, ~2019) used only to compute accidents-per-100K — it's labeled as such in the app, not pulled from KAPSARC.
 
