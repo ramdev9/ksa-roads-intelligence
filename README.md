@@ -101,6 +101,12 @@ Browser → Railway reverse proxy → the Streamlit app (one deployable unit tha
 
 **Not in any KAPSARC dataset:** road investment/spend figures (SAR), highway-specific lengths, and regional population. Population is a small hardcoded reference table in `data_loader.py` (approximate, GASTAT-era, ~2019) used only to compute accidents-per-100K — it's labeled as such in the app, not pulled from KAPSARC.
 
+## 📐 Methodology
+
+Every derived metric's formula, the reasoning behind the risk-scoring weights (40/30/30), the tercile cutoffs, and what was deliberately **not** built (forecasting, investment correlation, map visualization) — all documented in one place, not scattered across captions.
+
+Open the **"📐 Methodology & Data Decisions"** expander at the bottom of the [live dashboard](https://ksa-roads-intelligence-production.up.railway.app) to see it, or read the formulas straight from source in [`src/risk_model.py`](src/risk_model.py) and [`src/data_loader.py`](src/data_loader.py).
+
 ## 📁 Project Structure
 
 ```
