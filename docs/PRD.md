@@ -213,7 +213,7 @@ Dashboard displays all 9 chart/view types with real or sample data, download scr
 | 2026-10-11 | Real-data transform built for accidents + road development; dashboard reads real data with sample fallback; investment chart dropped (no real data for it) | DONE |
 | 2026-10-11 | Deployed to Railway: ksa-roads-intelligence-production.up.railway.app | DONE |
 | 2026-10-11 | Regional risk scoring + YoY trend model added (`src/risk_model.py`); time-series forecasting ruled out as infeasible with 4 years of annual data | DONE |
-| TBD | Portfolio page written | PENDING |
+| 2026-10-11 | Portfolio case study written (`docs/portfolio-case-study.md`) | DONE |
 
 ---
 
