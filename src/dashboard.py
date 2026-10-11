@@ -431,6 +431,35 @@ if data_loaded:
         with tab2:
             st.dataframe(roads_df, use_container_width=True)
 
+    with st.expander("📐 Methodology & Data Decisions"):
+        st.markdown("""
+        ### How We Read the Data
+
+        **Traffic Accidents (KAPSARC):** 2016-2019 only. KAPSARC's catalog describes this dataset as "2008+", but the downloadable CSV only contains 4 years. Each row = one region × one year.
+
+        **Road Development (KAPSARC):** 1990-2013 completions, with gaps (not every year is present). No overlap with the accident years, so no investment-vs-safety correlation is possible from this data.
+
+        ### Derived Metrics
+
+        | Metric | Formula | Why |
+        |--------|---------|-----|
+        | Accidents per 100K | `(accidents / population) × 100,000` | Normalizes for region size |
+        | Fatality Rate | `(deaths / accidents) × 100` | Severity indicator |
+        | Risk Score | `0.4 × fatality + 0.3 × rate + 0.3 × trend` | Composite ranking |
+
+        ### Assumptions Made
+
+        - **Population:** approximate GASTAT-era reference figures (~2019), not from KAPSARC. Used only for per-100K normalization — never shown as a standalone stat.
+        - **Risk weights:** 40/30/30 chosen to prioritize fatality severity over raw accident volume.
+        - **Tercile cutoffs:** High/Medium/Low = top/middle/bottom third of regions by score, not a fixed threshold — there's no external baseline to compare against.
+
+        ### What We Chose NOT to Build
+
+        - **Forecasting:** 4 data points per region is insufficient for ARIMA/Prophet. Trend extrapolation with confidence bands would look more precise than the data supports.
+        - **Investment correlation:** KAPSARC has no regional investment/spend dataset, only completion km.
+        - **Map visualization:** Would need geocoding not present in the source data.
+        """)
+
     # Footer
     st.divider()
     st.markdown("""
