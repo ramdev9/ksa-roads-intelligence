@@ -17,18 +17,20 @@ Currently, this data is siloed across multiple government agencies (MOT, GASTAT,
 
 ## 💡 Solution
 
-A unified dashboard that combines multiple Saudi transportation datasets:
+A unified dashboard that combines multiple Saudi transportation datasets pulled live from KAPSARC:
 
-- **Traffic Accidents by Region** (2018-2022): Accidents, injuries, deaths, population
-- **Road Infrastructure Development** (2010-2024): Paved roads, highways, investments
-- Cross-regional safety analysis with derived metrics
+- **Traffic Accidents by Region** (2016-2019): Accidents, injuries, deaths, region-level population reference
+- **Road Development** (1990-2013, non-continuous): Paved roads and agricultural dirt roads completed per year
+- Cross-regional safety analysis with derived metrics (accidents per 100K, fatality rate)
+
+> KAPSARC's road-development series and accident series don't share a time range, and KAPSARC doesn't publish an investment/spend dataset — so there's no investment-vs-outcome chart. Population figures are approximate reference values, not a KAPSARC field. Falls back to bundled synthetic sample data (clearly labeled in-app) if `scripts/download_data.py` hasn't been run or KAPSARC is unreachable.
 
 ## 📊 Key Visualizations
 
 1. **Regional Accident Distribution** - Horizontal bar chart showing accident counts by region
 2. **Trend Analysis** - Time-series of accidents, injuries, and deaths
-3. **Road Network Growth** - Area chart of infrastructure expansion
-4. **Investment Tracker** - Annual road investment in SAR billions
+3. **Cumulative Roads Completed** - Area chart of paved + dirt road completions since 1990
+4. **Paved Roads Completed per Year** - Annual completion bar chart
 5. **Safety Scatter Plot** - Accident rate vs fatality rate by region
 6. **Heatmap** - Accidents by region and year
 
@@ -59,7 +61,7 @@ cd ksa-roads-intelligence
 # Install dependencies
 pip install -r requirements.txt
 
-# Download real data (optional - sample data included)
+# Download real KAPSARC data (recommended; dashboard falls back to sample data if skipped)
 python scripts/download_data.py
 
 # Run the dashboard

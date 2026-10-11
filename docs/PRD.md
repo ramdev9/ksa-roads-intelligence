@@ -7,7 +7,7 @@ A data dashboard that turns Saudi Arabia's scattered transportation datasets int
 | Field | Value |
 |-------|-------|
 | Owner | Ram |
-| Status | Structure complete, data pending |
+| Status | Live KAPSARC data wired in; forecasting model and deployment pending |
 | Repo | ksa-roads-intelligence |
 | Updated | 2026-10-11 |
 
@@ -68,23 +68,28 @@ Opens at http://localhost:8501 — no auth, sample data included, real data requ
 ### DATA PIPELINE
 
 ```
-KAPSARC API → download_data.py → data/raw/*.csv → data_loader.py → normalized DataFrames
+KAPSARC API → download_data.py → data/raw/*.csv → data_loader.py (reshape + derive) → normalized DataFrames
 ```
 
-Six datasets from KAPSARC:
-- Traffic accidents and casualties by region
-- King Fahd Bridge vehicle crossings (monthly)
-- Passenger and freight vehicles by type
-- Trade and transport costs
-- Road development (paved, rural, highways)
-- Vehicle crossings at major cities
+`dashboard.py` tries real data first (`use_sample=False`) and falls back to bundled sample CSVs if the raw files aren't present, with an in-app caption showing which source is active.
+
+Six datasets downloaded from KAPSARC; two are actively used by the dashboard:
+- **Traffic accidents and casualties by region** — used. Raw format is long/semicolon-delimited (`time_period;region;indicator;value`), covers **2016-2019 only**, 13 regions + a "Total" row. `data_loader.py` pivots this to wide form and maps KAPSARC's region labels (e.g. "Eastern Region" → "Eastern") onto the app's canonical region list.
+- **Road development (paved + agricultural dirt roads)** — used. Raw format gives km **completed per year**, not a running network total, and covers **1990-2013 with gaps** (not continuous, stops well before the accident data starts). No highway-specific or investment figures exist in this dataset.
+- King Fahd Bridge vehicle crossings (monthly) — downloaded, not yet wired into a chart
+- Passenger and freight vehicles by type — downloaded, not yet wired into a chart
+- Trade and transport costs — downloaded, not yet wired into a chart
+- Vehicle crossings at major cities — downloaded (9 cities, point-in-time, not a time series), not yet wired into a chart
+
+**Known gaps vs. the original plan:** KAPSARC has no investment/spend dataset for Saudi roads, so the "Investment vs outcome correlation" hypothesis in section 02 can't be tested with this data source — the investment chart was dropped and replaced with "Paved Roads Completed per Year." The accident and road-development series also don't overlap in time (2016-19 vs 1990-2013), so no single chart can correlate them. Population-by-region (needed for `accidents_per_100k`) isn't in any KAPSARC dataset either — `data_loader.py` uses a small hardcoded table of approximate GASTAT-era regional population estimates (~2019), clearly caveated in the UI as a reference figure, not sourced from KAPSARC.
 
 ### DERIVED METRICS
 
 Calculated at load time, not stored:
-- `accidents_per_100k` = (accidents / population) × 100,000
+- `accidents_per_100k` = (accidents / population) × 100,000 — population from the approximate reference table above
 - `fatality_rate` = (deaths / accidents) × 100
-- `yoy_growth` = year-over-year percentage change
+- `cumulative_paved_km` / `cumulative_dirt_km` = running sum of km completed per year, starting from the dataset's earliest year (not a true historical network total, since the pre-1990 baseline is unknown)
+- `paved_growth_pct` = year-over-year % change in km completed
 
 ### DASHBOARD VIEWS
 
@@ -93,8 +98,8 @@ Calculated at load time, not stored:
 | KPI Row | Total accidents, injuries, deaths, avg fatality rate (latest year) |
 | Regional Bar | Accidents by region, sorted |
 | Trend Line | Accidents/injuries/deaths over time |
-| Infrastructure Area | Paved roads + highways growth |
-| Investment Bar | Annual SAR spend on roads |
+| Infrastructure Area | Cumulative paved + dirt roads completed since 1990 |
+| Completions Bar | Paved roads completed per year (km) |
 | Safety Scatter | Accident rate vs fatality rate by region |
 | Heatmap | Accidents by region × year |
 
@@ -188,8 +193,11 @@ Dashboard displays all 7 chart types with sample data, download script fetches a
 | 2026-10-11 | Project scaffolded | DONE |
 | 2026-10-11 | Sample data created | DONE |
 | 2026-10-11 | Dashboard v1 (7 charts) | DONE |
-| TBD | Download script tested with real KAPSARC data | PENDING |
+| 2026-10-11 | Pushed to GitHub (ramdev9/ksa-roads-intelligence) | DONE |
+| 2026-10-11 | Download script tested with real KAPSARC data; 2 of 6 URLs were dead and fixed | DONE |
+| 2026-10-11 | Real-data transform built for accidents + road development; dashboard reads real data with sample fallback; investment chart dropped (no real data for it) | DONE |
 | TBD | Forecasting model added | PENDING |
+| TBD | Deployed to Railway/Render | PENDING |
 | TBD | Portfolio page written | PENDING |
 
 ---

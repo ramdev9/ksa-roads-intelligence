@@ -28,11 +28,11 @@ DATASETS = {
         "description": "Traffic accidents and casualties by region (2008+)"
     },
     "vehicle_crossings_cities": {
-        "url": "https://datasource.kapsarc.org/api/v2/catalog/datasets/number-of-vehicles-crossings-of-major-cities/exports/csv",
+        "url": "https://datasource.kapsarc.org/api/v2/catalog/datasets/number-of-vehicles-crossings-of-major-cities-/exports/csv",
         "description": "Vehicle crossings at major Saudi cities"
     },
     "road_development": {
-        "url": "https://datasource.kapsarc.org/api/v2/catalog/datasets/development-of-paved-and-rural-roads-construction/exports/csv",
+        "url": "https://datasource.kapsarc.org/api/v2/catalog/datasets/development-of-paved-and-rural-roads-construction-in-the-kingdom-1999-2009/exports/csv",
         "description": "Development of paved and rural roads construction"
     }
 }

@@ -47,20 +47,35 @@ st.title("🛣️ KSA Roads Intelligence Dashboard")
 st.markdown("*Analyzing Saudi Arabia's Road Infrastructure & Traffic Safety | Vision 2030*")
 st.divider()
 
-# Load data
+# Load data — prefer real KAPSARC data, fall back to bundled sample data
 @st.cache_data
 def load_all_data():
-    accidents = load_traffic_accidents(use_sample=True)
-    roads = load_road_development(use_sample=True)
-    return accidents, roads
+    try:
+        accidents = load_traffic_accidents(use_sample=False)
+        roads = load_road_development(use_sample=False)
+        return accidents, roads, "real"
+    except FileNotFoundError:
+        accidents = load_traffic_accidents(use_sample=True)
+        roads = load_road_development(use_sample=True)
+        return accidents, roads, "sample"
 
 try:
-    accidents_df, roads_df = load_all_data()
+    accidents_df, roads_df, data_source = load_all_data()
     data_loaded = True
 except FileNotFoundError as e:
     st.error(f"Data not found: {e}")
     st.info("Run `python scripts/download_data.py` to download the datasets first.")
     data_loaded = False
+
+if data_loaded:
+    if data_source == "real":
+        st.caption(
+            "📡 Live KAPSARC data — accidents cover 2016–2019, road completions cover 1990–2013 "
+            "(KAPSARC's most recent published years; the two series don't overlap in time). "
+            "Regional population used for per-100k rates is an approximate reference figure, not from KAPSARC."
+        )
+    else:
+        st.caption("🧪 Using bundled sample data — run `python scripts/download_data.py` for real KAPSARC data.")
 
 if data_loaded:
     # Sidebar filters
@@ -174,40 +189,40 @@ if data_loaded:
     col1, col2 = st.columns(2)
 
     with col1:
-        # Road network growth
+        # Cumulative roads completed since the dataset's earliest year
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=roads_df["year"],
-            y=roads_df["paved_roads_km"],
-            name="Paved Roads",
+            y=roads_df["cumulative_paved_km"],
+            name="Paved Roads (cumulative)",
             fill="tozeroy",
             line=dict(color="#3498db")
         ))
         fig.add_trace(go.Scatter(
             x=roads_df["year"],
-            y=roads_df["highways_km"],
-            name="Highways",
+            y=roads_df["cumulative_dirt_km"],
+            name="Agricultural Dirt Roads (cumulative)",
             fill="tozeroy",
             line=dict(color="#27ae60")
         ))
         fig.update_layout(
-            title="Road Network Growth (km)",
+            title="Cumulative Roads Completed (km)",
             height=350,
             legend=dict(orientation="h", yanchor="bottom", y=1.02)
         )
         st.plotly_chart(fig, use_container_width=True)
 
     with col2:
-        # Investment trend
+        # Roads completed per year
         fig = px.bar(
             roads_df,
             x="year",
-            y="investment_sar_billion",
-            color="investment_sar_billion",
+            y="paved_roads_completed_km",
+            color="paved_roads_completed_km",
             color_continuous_scale="Greens"
         )
         fig.update_layout(
-            title="Annual Road Investment (SAR Billion)",
+            title="Paved Roads Completed per Year (km)",
             height=350,
             showlegend=False
         )

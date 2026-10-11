@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 .DS_Store
 .streamlit/secrets.toml
+
+# Downloaded real KAPSARC data (large, regenerable via scripts/download_data.py)
+data/raw/*.csv
+!data/raw/sample_*.csv
