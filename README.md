@@ -2,6 +2,8 @@
 
 Interactive data visualization of Saudi Arabia's road infrastructure and traffic safety metrics. Built to demonstrate Data/BI skills using real KSA government open data.
 
+**Live demo:** [ksa-roads-intelligence-production.up.railway.app](https://ksa-roads-intelligence-production.up.railway.app)
+
 ![Dashboard Preview](docs/dashboard-preview.png)
 
 ## 🎯 Problem Statement

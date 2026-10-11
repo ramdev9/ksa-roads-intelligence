@@ -7,8 +7,9 @@ A data dashboard that turns Saudi Arabia's scattered transportation datasets int
 | Field | Value |
 |-------|-------|
 | Owner | Ram |
-| Status | Live KAPSARC data wired in; forecasting model and deployment pending |
+| Status | Live on Railway with real KAPSARC data; forecasting model pending |
 | Repo | ksa-roads-intelligence |
+| Live | ksa-roads-intelligence-production.up.railway.app |
 | Updated | 2026-10-11 |
 
 ---
@@ -196,8 +197,8 @@ Dashboard displays all 7 chart types with sample data, download script fetches a
 | 2026-10-11 | Pushed to GitHub (ramdev9/ksa-roads-intelligence) | DONE |
 | 2026-10-11 | Download script tested with real KAPSARC data; 2 of 6 URLs were dead and fixed | DONE |
 | 2026-10-11 | Real-data transform built for accidents + road development; dashboard reads real data with sample fallback; investment chart dropped (no real data for it) | DONE |
+| 2026-10-11 | Deployed to Railway: ksa-roads-intelligence-production.up.railway.app | DONE |
 | TBD | Forecasting model added | PENDING |
-| TBD | Deployed to Railway/Render | PENDING |
 | TBD | Portfolio page written | PENDING |
 
 ---
