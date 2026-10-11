@@ -16,6 +16,7 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent))
 from data_loader import load_traffic_accidents, load_road_development, get_summary_stats, get_regions
+from risk_model import compute_risk_scores, compute_yoy_trend
 
 # Page config
 st.set_page_config(
@@ -272,6 +273,76 @@ if data_loaded:
         )
         fig.update_layout(height=400)
         st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+    # Risk Scoring & Trend Analysis
+    st.subheader("🎯 Regional Risk Scoring")
+    st.caption(
+        "Not a forecast — the accident data is annual with only "
+        f"{accidents_df['year'].nunique()} years per region, too few points for "
+        "ARIMA/Prophet-style forecasting. This is a composite score (40% fatality "
+        "rate, 30% accidents per 100K, 30% average year-over-year trend) ranking "
+        "regions into High/Medium/Low risk terciles, plus the year-over-year trend "
+        "each score is partly built from."
+    )
+
+    risk_df = compute_risk_scores(accidents_df)
+    yoy_df = compute_yoy_trend(accidents_df)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        risk_colors = {"High": "#e74c3c", "Medium": "#f39c12", "Low": "#27ae60"}
+        fig = px.bar(
+            risk_df,
+            x="risk_score",
+            y="region",
+            orientation="h",
+            color="risk_level",
+            color_discrete_map=risk_colors,
+            category_orders={"risk_level": ["High", "Medium", "Low"]},
+            title=f"Composite Risk Score by Region ({int(accidents_df['year'].max())})"
+        )
+        fig.update_layout(
+            height=450,
+            yaxis={"categoryorder": "total ascending"},
+            xaxis_title="Risk Score (0-100)",
+            yaxis_title=""
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        avg_trend = yoy_df.groupby("region")["yoy_pct"].mean().reset_index()
+        avg_trend = avg_trend.sort_values("yoy_pct")
+
+        fig = px.bar(
+            avg_trend,
+            x="yoy_pct",
+            y="region",
+            orientation="h",
+            color="yoy_pct",
+            color_continuous_scale="RdYlGn_r",
+            color_continuous_midpoint=0,
+            title="Average Year-over-Year Accident Change (%)"
+        )
+        fig.update_layout(
+            height=450,
+            xaxis_title="Avg YoY Change (%)",
+            yaxis_title=""
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    top_risk = risk_df.iloc[0]
+    st.info(
+        f"📌 Highest composite risk: **{top_risk['region']}** "
+        f"(fatality rate {top_risk['fatality_rate']:.1f}%, "
+        f"{top_risk['accidents_per_100k']:.0f} accidents per 100K, "
+        f"{top_risk['avg_yoy_pct']:+.1f}% avg YoY trend)."
+    )
+
+    with st.expander("📋 View Risk Scoring Data"):
+        st.dataframe(risk_df, use_container_width=True)
 
     st.divider()
 

@@ -35,6 +35,10 @@ A unified dashboard that combines multiple Saudi transportation datasets pulled 
 4. **Paved Roads Completed per Year** - Annual completion bar chart
 5. **Safety Scatter Plot** - Accident rate vs fatality rate by region
 6. **Heatmap** - Accidents by region and year
+7. **Regional Risk Scoring** - Composite risk score (fatality rate + accident rate + trend) ranking regions High/Medium/Low
+8. **Year-over-Year Trend** - Average YoY accident change by region
+
+> No ARIMA/Prophet forecasting — the real accident data is annual with only 4 years per region, too thin to forecast reliably. Risk scoring was chosen as the honest alternative; see `docs/PRD.md` section 04 for the full rationale.
 
 ## 🛠 Tech Stack
 

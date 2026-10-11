@@ -104,13 +104,26 @@ Calculated at load time, not stored:
 | Safety Scatter | Accident rate vs fatality rate by region |
 | Heatmap | Accidents by region × year |
 
-### FORECASTING MODEL (v2)
+### RISK SCORING MODEL (v2)
 
-Not yet built. Planned:
-- Simple ARIMA or Prophet model on regional accident time-series
-- Output: predicted accident count for next 4 quarters by region
-- Confidence intervals shown on chart
-- "High risk" flag when prediction exceeds 1.5× historical average
+Built — `src/risk_model.py`, surfaced in the "Regional Risk Scoring" dashboard section.
+
+**Why not ARIMA/Prophet:** the real accident dataset is annual with only 4 years per region (2016-2019 — see the gap noted above). Time-series forecasting models need tens of points per series to fit reliably; 4 is not enough to produce a defensible forecast, let alone confidence intervals. Rather than present a precise-looking number built on too little data, this uses a composite risk score plus a plain year-over-year trend — both honest about being descriptive, not predictive.
+
+**Composite risk score** (0-100) per region, latest year:
+- 40% fatality rate (deaths / accidents)
+- 30% accidents per 100K population
+- 30% average year-over-year accident change
+
+Each component is min-max normalized across regions, then weighted and summed. Regions are ranked into **High/Medium/Low terciles** (top third, middle third, bottom third by score) rather than a fixed threshold — there's no external baseline (e.g. a national target rate) to compare against, so a relative ranking is what the data actually supports.
+
+**Year-over-year trend**: `(accidents_this_year - accidents_last_year) / accidents_last_year`, averaged across each region's available year-pairs. Shown as its own chart since it's the most interpretable single number in the model.
+
+**Input/output schema:**
+- Input: `accidents_df` (year, region, accidents, deaths, population — from `data_loader.load_traffic_accidents()`)
+- Output: one row per region with `risk_score`, `risk_level` (High/Medium/Low), `avg_yoy_pct`, and the raw metrics it was built from
+
+**Accuracy threshold:** none claimed. This is a ranking/scoring model, not a forecast — there is no held-out year to validate a prediction against with only 4 years of data. If KAPSARC later publishes more years, revisit with a real train/test split before claiming any accuracy number.
 
 ### BEHAVIOUR CONTRACT
 
@@ -127,7 +140,7 @@ Not yet built. Planned:
 
 ### Metric to graduate
 
-Dashboard loads all 6 datasets without error, displays all 7 chart types correctly, and forecasting model (when built) achieves MAPE < 15% on held-out 2022 data.
+Dashboard loads all 6 datasets without error, displays all 9 chart/view types correctly (7 original + risk score bar + YoY trend bar), and the risk scoring model's region rankings are directionally sane on manual review (e.g. a region with a high fatality rate and a worsening trend should not rank Low).
 
 ### Eval approach
 
@@ -136,7 +149,7 @@ Dashboard loads all 6 datasets without error, displays all 7 chart types correct
 | Data integrity | Row counts match KAPSARC source |
 | Schema validation | All expected columns present |
 | Derived metrics | Spot-check 5 rows manually |
-| Forecast accuracy | Train on 2018-2021, test on 2022 |
+| Risk score sanity | Manually verify top/bottom-ranked region against raw fatality rate + YoY trend |
 
 No automated eval harness yet — this is a data/BI project, not an LLM output validation problem.
 
@@ -148,16 +161,17 @@ No automated eval harness yet — this is a data/BI project, not an LLM output v
 
 ### IN
 
-- KAPSARC data ingestion (6 datasets)
+- KAPSARC data ingestion (6 datasets, 2 wired into charts)
 - Normalized data model
-- Streamlit dashboard with 7 chart types
+- Streamlit dashboard with 9 chart/view types
 - Derived safety metrics
-- Time-series forecasting model
+- Regional risk scoring + YoY trend analysis (not time-series forecasting — see section 04)
 - Dark theme, mobile-responsive
 
 ### OUT
 
 - Real-time data (KAPSARC updates monthly/quarterly)
+- Time-series forecasting (ARIMA/Prophet) — ruled out; only 4 years of annual data per region, not enough to fit reliably
 - Arabic language UI (English only for v1)
 - User accounts or saved views
 - Direct integration with MOT or GASTAT APIs
@@ -185,7 +199,7 @@ Kill switch: if KAPSARC changes their API schema, the download script fails loud
 
 ### Definition of done
 
-Dashboard displays all 7 chart types with sample data, download script fetches all 6 KAPSARC datasets successfully, and README documents the full setup process. Testable — run `streamlit run src/dashboard.py` and visually confirm.
+Dashboard displays all 9 chart/view types with real or sample data, download script fetches all 6 KAPSARC datasets successfully, risk scoring model runs without error on both data sources, and README documents the full setup process. Testable — run `streamlit run src/dashboard.py` and visually confirm.
 
 ### Change Log
 
@@ -198,7 +212,7 @@ Dashboard displays all 7 chart types with sample data, download script fetches a
 | 2026-10-11 | Download script tested with real KAPSARC data; 2 of 6 URLs were dead and fixed | DONE |
 | 2026-10-11 | Real-data transform built for accidents + road development; dashboard reads real data with sample fallback; investment chart dropped (no real data for it) | DONE |
 | 2026-10-11 | Deployed to Railway: ksa-roads-intelligence-production.up.railway.app | DONE |
-| TBD | Forecasting model added | PENDING |
+| 2026-10-11 | Regional risk scoring + YoY trend model added (`src/risk_model.py`); time-series forecasting ruled out as infeasible with 4 years of annual data | DONE |
 | TBD | Portfolio page written | PENDING |
 
 ---
@@ -207,7 +221,7 @@ Dashboard displays all 7 chart types with sample data, download script fetches a
 
 Could a developer or an AI agent build this feature from only this document, without asking a single question?
 
-**Gap:** Forecasting model spec is vague — needs input/output schema, model choice rationale, and accuracy threshold before someone could implement it blind.
+**Resolved:** the original forecasting spec was vague (no input/output schema, model choice, or accuracy threshold). Investigation found the real data only supports 4 annual points per region — too thin for ARIMA/Prophet. Replaced with a fully specified risk-scoring model (see section 04) that an agent could implement blind from this document alone.
 
 ---
 
