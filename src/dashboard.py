@@ -433,7 +433,7 @@ if data_loaded:
 
     with st.expander("📐 Methodology & Data Decisions"):
         st.markdown("""
-### How We Read the Data
+### Data Coverage & Limits
 
 **Traffic Accidents (KAPSARC):** 2016–2019 only. KAPSARC's catalog describes this dataset as "2008+", but the downloadable CSV only contains 4 years. Each row = one region × one year.
 
